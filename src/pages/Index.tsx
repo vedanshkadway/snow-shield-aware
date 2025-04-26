@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
+import { Bell, MapPin, MessageSquare, ArrowRight, AlertTriangle } from "lucide-react";
 
 const Index = () => {
   return (
@@ -73,7 +74,7 @@ const Index = () => {
             {/* Feature 2 */}
             <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <Map className="h-6 w-6 text-primary" />
+                <MapPin className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Interactive Maps</h3>
               <p className="text-gray-600">
@@ -106,7 +107,7 @@ const Index = () => {
             {/* Feature 5 */}
             <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <SOS className="h-6 w-6 text-primary" />
+                <AlertTriangle className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Emergency SOS</h3>
               <p className="text-gray-600">

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SOS } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface SOSButtonProps {
@@ -42,7 +42,7 @@ export const SOSButton = ({ className }: SOSButtonProps) => {
         className={`animate-pulse-alert gap-2 ${className}`}
         onClick={() => setIsDialogOpen(true)}
       >
-        <SOS className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <span>SOS</span>
       </Button>
 

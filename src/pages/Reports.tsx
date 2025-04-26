@@ -162,7 +162,7 @@ const Reports = () => {
         <TabsContent value="high">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mockReports
-              .filter(report => report.riskLevel === "high" || report.riskLevel === "extreme")
+              .filter(report => report.riskLevel === "high")
               .map(report => (
                 <ReportCard 
                   key={report.id}
