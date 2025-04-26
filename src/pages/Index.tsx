@@ -1,128 +1,171 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
-import { Bell, MapPin, MessageSquare, ArrowRight, AlertTriangle } from "lucide-react";
+import { 
+  Bell, 
+  AlertTriangle, 
+  MapPin, 
+  MessageSquare, 
+  Brain, 
+  Shield,
+  Phone
+} from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary to-[#7E69AB] text-white">
-        <div className="container mx-auto px-4 py-16 md:py-24">
+      <div 
+        className="relative text-white bg-cover bg-center" 
+        style={{ backgroundImage: "url('assets/background.jpg')" }} 
+      >
+        {/* Optional dark overlay */}
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+
+        <div className="relative container mx-auto px-4 py-16">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
               <div className="flex items-center gap-3 mb-6">
-                <Logo className="h-10 w-10" />
-                <h1 className="text-3xl font-bold">Snow Shield</h1>
+                <Shield className="h-8 w-8 text-white" />
+                <h1 className="text-2xl font-bold text-white">Snow Shield</h1>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Avalanche Safety & Prediction System
+              <h2 className="text-4xl font-bold mb-6 text-white">
+                Avalanche Alerts & Warning System
               </h2>
-              <p className="text-lg md:text-xl mb-8 opacity-90">
-                Real-time avalanche warnings, safety information, and community reports to keep you safe in snow-prone areas.
+              <div className="bg-red-700 border-l-4 border-white p-4 mb-6 rounded-r">
+                <p className="text-lg text-white font-medium">
+                  Stay informed. Stay prepared. Stay safe.
+                </p>
+              </div>
+              <p className="text-white mb-8 opacity-90">
+                Life-saving alerts and warnings delivered to your device when avalanche conditions become dangerous.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button 
                   asChild
                   size="lg" 
-                  className="bg-white text-primary hover:bg-gray-100"
+                  className="bg-white text-red-600 hover:bg-gray-100 font-medium"
                 >
-                  <Link to="/signup">Create Account</Link>
+                  <Link to="/signup">Get Alerts</Link>
                 </Button>
                 <Button 
                   asChild
                   variant="outline" 
                   size="lg" 
-                  className="border-white text-white hover:bg-white/10"
+                  className="bg-red border-red text-white"
                 >
                   <Link to="/login">Sign In</Link>
                 </Button>
               </div>
             </div>
-            <div className="md:w-1/2 md:pl-12">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                <img 
-                  src="https://images.unsplash.com/photo-1482938289607-e9573fc25ebb" 
-                  alt="Snow mountain landscape" 
-                  className="w-full h-auto rounded-lg shadow-lg"
-                />
-              </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* Alert Levels Section */}
+      <div className="bg-white border-b py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">Alert Levels</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-red-600 rounded-lg p-4 text-center border border-red-400 text-white">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-white" />
+              <h3 className="font-semibold">CRITICAL</h3>
+              <p className="text-sm text-white opacity-90">Immediate danger</p>
+            </div>
+            <div className="bg-orange-500 rounded-lg p-4 text-center border border-orange-400 text-white">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-white" />
+              <h3 className="font-semibold">HIGH</h3>
+              <p className="text-sm text-white opacity-90">Dangerous conditions</p>
+            </div>
+            <div className="bg-yellow-500 rounded-lg p-4 text-center border border-yellow-400 text-gray-800">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-800" />
+              <h3 className="font-semibold">MODERATE</h3>
+              <p className="text-sm text-gray-800">Exercise caution</p>
+            </div>
+            <div className="bg-green-500 rounded-lg p-4 text-center border border-green-400 text-white">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-white" />
+              <h3 className="font-semibold">LOW</h3>
+              <p className="text-sm text-white opacity-90">Generally safe</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
+          <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">How Our Alert System Works</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+            Snow Shield delivers critical avalanche warnings through multiple channels to ensure you never miss an important alert.
+          </p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <Bell className="h-6 w-6 text-primary" />
+            <div className="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-600">
+              <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Bell className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Real-time Alerts</h3>
+              <h3 className="text-xl font-medium mb-3 text-gray-800">Instant Alerts</h3>
               <p className="text-gray-600">
-                Get instant notifications about avalanche risks in your area through SMS and push alerts.
+                Receive critical avalanche warnings within seconds via SMS, push notifications, and email.
               </p>
             </div>
             
             {/* Feature 2 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <MapPin className="h-6 w-6 text-primary" />
+            <div className="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-600">
+              <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <MapPin className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Interactive Maps</h3>
+              <h3 className="text-xl font-medium mb-3 text-gray-800">Danger Zone Maps</h3>
               <p className="text-gray-600">
-                View color-coded risk zones and find safe routes through hazardous areas.
+                Visual alerts with clear risk zones and safe evacuation routes to escape danger.
               </p>
             </div>
             
             {/* Feature 3 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <MessageSquare className="h-6 w-6 text-primary" />
+            <div className="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-600">
+              <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <MessageSquare className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Community Reports</h3>
+              <h3 className="text-xl font-medium mb-3 text-gray-800">Community Warnings</h3>
               <p className="text-gray-600">
-                Share and view real-time reports of conditions directly from other users in your area.
+                Verified user-submitted alerts create a network of real-time monitoring of conditions.
               </p>
             </div>
             
             {/* Feature 4 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <ArrowRight className="h-6 w-6 text-primary" />
+            <div className="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-600">
+              <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Brain className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">ML Predictions</h3>
+              <h3 className="text-xl font-medium mb-3 text-gray-800">Predictive Alerts</h3>
               <p className="text-gray-600">
-                Advanced machine learning models predict avalanche risks based on weather and terrain data.
+                AI-powered system that predicts avalanche formation before it happens, giving you critical time to evacuate.
               </p>
             </div>
             
             {/* Feature 5 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="h-6 w-6 text-primary" />
+            <div className="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-600">
+              <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Phone className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Emergency SOS</h3>
+              <h3 className="text-xl font-medium mb-3 text-gray-800">Emergency SOS</h3>
               <p className="text-gray-600">
-                One-tap emergency button that shares your location with rescue teams during emergencies.
+                One-tap emergency button that broadcasts your exact location to rescue teams during emergencies.
               </p>
             </div>
             
             {/* Feature 6 */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <MapPin className="h-6 w-6 text-primary" />
+            <div className="bg-white rounded-lg p-6 shadow-sm border-t-4 border-red-600">
+              <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Shield className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Location-based Risk</h3>
+              <h3 className="text-xl font-medium mb-3 text-gray-800">24/7 Monitoring</h3>
               <p className="text-gray-600">
-                Personalized risk assessments based on your pincode and current location.
+                Round-the-clock system that continually monitors conditions and sends alerts.
               </p>
             </div>
           </div>
@@ -130,41 +173,40 @@ const Index = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gray-900 text-white py-16">
+      <div className="bg-red-600 text-white py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Stay Safe in Avalanche-Prone Areas</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of users who rely on Snow Shield for real-time avalanche safety information.
+          <h2 className="text-2xl font-bold mb-6">Don't Risk Your Safety</h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto">
+          Over 150 people are killed by avalanches every year.
+      <br />
+      Switch to Snow Shield's alert system.
           </p>
           <Button 
             asChild
             size="lg" 
-            className="bg-primary hover:bg-primary/90"
+            className="bg-white text-red-600 hover:bg-gray-100 font-medium"
           >
-            <Link to="/signup">Get Started Now</Link>
+            <Link to="/signup">Sign Up For Alerts</Link>
           </Button>
+          
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300 py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <Logo className="h-8 w-8" />
-              <span className="font-semibold text-white">Snow Shield</span>
-            </div>
-            <div className="flex gap-6">
-              <Link to="#" className="hover:text-white">Privacy Policy</Link>
-              <Link to="#" className="hover:text-white">Terms of Use</Link>
-              <Link to="#" className="hover:text-white">Contact Us</Link>
-            </div>
-          </div>
-          <div className="mt-6 text-center md:text-left text-sm">
-            &copy; {new Date().getFullYear()} Snow Shield. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <footer className="bg-gray-900 text-gray-400 py-8">
+  <div className="container mx-auto px-4 text-center">
+    <div className="flex flex-col items-center justify-center">
+      <div className="flex items-center gap-2 mb-4">
+        <Shield className="h-6 w-6 text-red-500" />
+        <span className="font-medium text-white">Snow Shield</span>
+      </div>
+    </div>
+    <div className="mt-6 text-center text-sm">
+      &copy; {new Date().getFullYear()} Snow Shield Alert System. All rights reserved.
+    </div>
+  </div>
+</footer>
+
     </div>
   );
 };
