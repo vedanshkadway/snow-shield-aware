@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,7 +26,7 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
+					DEFAULT: '#9B87F5',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
@@ -61,7 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+        risk: {
+          safe: '#4ADE80',     // Green
+          moderate: '#FEF08A', // Yellow
+          high: '#FB923C',     // Orange
+          extreme: '#EA384C',  // Red
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,12 +91,25 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+        'pulse-alert': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' }
+        },
+        'slide-in': {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+        'pulse-alert': 'pulse-alert 2s ease-in-out infinite',
+        'slide-in': 'slide-in 0.3s ease-out forwards'
+			},
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
