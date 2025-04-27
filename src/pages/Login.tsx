@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +15,21 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/Logo";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    // If already authenticated, redirect to dashboard
+    if (isAuthenticated && !isLoading) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,19 +39,26 @@ const Login = () => {
       return;
     }
 
-    setIsLoading(true);
-
     try {
+      setIsSubmitting(true);
       await login(email, password);
-      navigate("/dashboard");
-      toast.success("Login successful");
-    } catch (error) {
-      toast.error("Login failed. Please check your credentials.");
-      console.error(error);
+      // Don't navigate here - let the auth state change trigger navigation
+    } catch (error: any) {
+      console.error("Login error:", error);
+      // Error is already handled in the login function
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+        <Loader2 className="h-8 w-8 text-red-600 animate-spin" />
+        <p className="mt-4 text-white">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
@@ -74,6 +90,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -94,6 +111,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -103,9 +121,14 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full bg-red-600 hover:bg-red-700 text-white"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : "Sign In"}
               </Button>
 
               <p className="text-sm text-gray-400 mt-4 text-center">

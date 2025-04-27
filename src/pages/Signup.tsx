@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/Logo";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -22,9 +24,16 @@ const Signup = () => {
   const [pinCode, setPinCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { signup, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    // If already authenticated, redirect to dashboard
+    if (isAuthenticated && !isLoading) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,24 +43,42 @@ const Signup = () => {
       return;
     }
 
+    if (password.length < 6) {
+      toast.error("Password should be at least 6 characters");
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    setIsLoading(true);
-
     try {
+      setIsSubmitting(true);
       await signup(name, email, phone, pinCode, password);
-      navigate("/dashboard");
-      toast.success("Account created successfully");
-    } catch (error) {
-      toast.error("Failed to create account. Please try again.");
-      console.error(error);
+      toast.success("Account created! Please check your email to verify your account.");
+      // Navigate to login page after successful signup
+      navigate("/login");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      // Most errors are already handled in the signup function
+      // but we can add additional error handling here if needed
+      if (error.code === "weak_password") {
+        toast.error("Please use a stronger password");
+      }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+        <Loader2 className="h-8 w-8 text-red-600 animate-spin" />
+        <p className="mt-4 text-white">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4 py-8">
@@ -82,6 +109,7 @@ const Signup = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -95,6 +123,7 @@ const Signup = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -107,6 +136,7 @@ const Signup = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -119,18 +149,20 @@ const Signup = () => {
                   value={pinCode}
                   onChange={(e) => setPinCode(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-300">Password</Label>
+                <Label htmlFor="password" className="text-gray-300">Password (min. 6 characters)</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -143,6 +175,7 @@ const Signup = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  disabled={isSubmitting}
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
@@ -152,9 +185,14 @@ const Signup = () => {
               <Button
                 type="submit"
                 className="w-full bg-red-600 hover:bg-red-700 text-white"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? "Creating Account..." : "Create Account"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : "Create Account"}
               </Button>
 
               <p className="text-sm text-gray-400 mt-4 text-center">
