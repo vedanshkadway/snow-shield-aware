@@ -120,33 +120,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (name: string, email: string, phone: string, pinCode: string, password: string) => {
     try {
-      // Create the user with auth.signUp
-      const { error } = await supabase.auth.signUp({
+      // First create the auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name,
-            phone,
-            pinCode,
-            email, // Add email to user metadata
-            role: 'user' // Explicitly set default role
-          },
-        },
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
       
-      // After successful signup, explicitly insert a record into the profiles table
-      // This ensures the email gets properly set even if the trigger has issues
+      if (!authData.user) {
+        throw new Error("User creation failed");
+      }
+      
+      // Then create the profile record separately
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: (await supabase.auth.getUser()).data.user?.id,
+          id: authData.user.id,
           name,
           phone,
           pin_code: pinCode,
-          email: email,
+          email,
           role: 'user'
         });
       
