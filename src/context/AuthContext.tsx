@@ -1,5 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type User = {
   id: string;
@@ -15,7 +17,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, phone: string, pinCode: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
 };
 
@@ -35,73 +37,120 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem("snowShieldUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setIsLoading(true);
+        if (session) {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profile) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                name: profile.name,
+                phone: profile.phone,
+                pinCode: profile.pin_code,
+                role: 'user'
+              });
+              setIsAuthenticated(true);
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile, error }) => {
+            if (profile) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                name: profile.name,
+                phone: profile.phone,
+                pinCode: profile.pin_code,
+                role: 'user'
+              });
+              setIsAuthenticated(true);
+            }
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data - in real app, this would come from backend
-      const mockUser: User = {
-        id: "user-123",
-        name: "John Doe",
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        phone: "+1234567890",
-        pinCode: "12345",
-        role: "user"
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem("snowShieldUser", JSON.stringify(mockUser));
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error("Login error:", error);
+        password,
+      });
+
+      if (error) throw error;
+      toast.success("Logged in successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login");
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const signup = async (name: string, email: string, phone: string, pinCode: string, password: string) => {
-    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user creation
-      const mockUser: User = {
-        id: `user-${Date.now()}`,
-        name,
+      const { error } = await supabase.auth.signUp({
         email,
-        phone,
-        pinCode,
-        role: "user"
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem("snowShieldUser", JSON.stringify(mockUser));
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error("Signup error:", error);
+        password,
+        options: {
+          data: {
+            name,
+            phone,
+            pinCode,
+          },
+        },
+      });
+
+      if (error) throw error;
+      toast.success("Account created successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account");
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("snowShieldUser");
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      setIsAuthenticated(false);
+      toast.success("Logged out successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to logout");
+      throw error;
+    }
   };
 
   return (
