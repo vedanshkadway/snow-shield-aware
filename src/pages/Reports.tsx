@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,10 +10,25 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RiskBadge } from "@/components/RiskBadge";
-import { Camera, Search, MapPin } from "lucide-react";
+import { Camera, Search, MapPin, Upload } from "lucide-react";
 import ReportCard from "@/components/ReportCard";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 // Mock data for demonstration
 const mockReports = [
@@ -56,10 +70,41 @@ const mockReports = [
   }
 ];
 
+// Define the type for our reports
+type Report = {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  timestamp: Date;
+  imageUrl?: string;
+  riskLevel: "safe" | "moderate" | "high" | "extreme";
+};
+
+// Define the type for our new report form
+type NewReport = Omit<Report, "id" | "timestamp"> & {
+  imageFile?: File | null;
+};
+
 const Reports = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedReport, setSelectedReport] = useState<typeof mockReports[0] | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [reports, setReports] = useState<Report[]>(mockReports);
+  
+  // State for the new report form
+  const [newReport, setNewReport] = useState<NewReport>({
+    title: "",
+    description: "",
+    location: "",
+    riskLevel: "moderate",
+    imageFile: null,
+    imageUrl: ""
+  });
+  
+  // Preview image URL for the create form
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,11 +113,79 @@ const Reports = () => {
   };
   
   const handleViewReport = (id: string) => {
-    const report = mockReports.find(r => r.id === id);
+    const report = reports.find(r => r.id === id);
     if (report) {
       setSelectedReport(report);
-      setIsDialogOpen(true);
+      setIsViewDialogOpen(true);
     }
+  };
+  
+  const handleCreateReport = () => {
+    setIsCreateDialogOpen(true);
+  };
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    
+    if (file) {
+      // Update the form state with the file
+      setNewReport(prev => ({ ...prev, imageFile: file }));
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setNewReport(prev => ({ ...prev, imageFile: null }));
+      setPreviewImage(null);
+    }
+  };
+  
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewReport(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
+    setNewReport(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSubmitReport = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // In a real app, you would upload the image and get a URL
+    // For this demo, we'll use the preview image or a placeholder
+    const imageUrl = previewImage || "https://images.unsplash.com/photo-1516298773066-c48f8e9bd92b";
+    
+    // Create a new report with an ID and timestamp
+    const newReportWithId: Report = {
+      id: `${reports.length + 1}`,
+      ...newReport,
+      imageUrl,
+      timestamp: new Date()
+    };
+    
+    // Add the new report to our list
+    setReports(prev => [newReportWithId, ...prev]);
+    
+    // Close the dialog and reset form
+    setIsCreateDialogOpen(false);
+    toast.success("Report created successfully!");
+    
+    // Reset the form
+    setNewReport({
+      title: "",
+      description: "",
+      location: "",
+      riskLevel: "moderate",
+      imageFile: null,
+      imageUrl: ""
+    });
+    setPreviewImage(null);
   };
 
   return (
@@ -112,7 +225,7 @@ const Reports = () => {
         
         <TabsContent value="all">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockReports.map(report => (
+            {reports.map(report => (
               <ReportCard 
                 key={report.id}
                 {...report}
@@ -126,14 +239,14 @@ const Reports = () => {
               <p className="text-sm text-gray-500 text-center mb-4">
                 Share your observations with the community
               </p>
-              <Button variant="outline">Create Report</Button>
+              <Button variant="outline" onClick={handleCreateReport}>Create Report</Button>
             </Card>
           </div>
         </TabsContent>
         
         <TabsContent value="safe">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockReports
+            {reports
               .filter(report => report.riskLevel === "safe")
               .map(report => (
                 <ReportCard 
@@ -147,7 +260,7 @@ const Reports = () => {
         
         <TabsContent value="moderate">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockReports
+            {reports
               .filter(report => report.riskLevel === "moderate")
               .map(report => (
                 <ReportCard 
@@ -161,7 +274,7 @@ const Reports = () => {
         
         <TabsContent value="high">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockReports
+            {reports
               .filter(report => report.riskLevel === "high")
               .map(report => (
                 <ReportCard 
@@ -174,8 +287,8 @@ const Reports = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Report Detail Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Report View Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="sm:max-w-3xl">
           {selectedReport && (
             <>
@@ -220,10 +333,129 @@ const Reports = () => {
               </div>
               
               <CardFooter className="flex justify-end gap-2 pt-2 border-t">
-                <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
+                <Button onClick={() => setIsViewDialogOpen(false)}>Close</Button>
               </CardFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Create Report Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Create New Report</DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitReport} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder="Enter a descriptive title"
+                  value={newReport.title}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  name="location"
+                  placeholder="Enter location or pin code"
+                  value={newReport.location}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="riskLevel">Risk Level</Label>
+                <Select
+                  value={newReport.riskLevel}
+                  onValueChange={(value) => handleSelectChange("riskLevel", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select risk level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="safe">Safe</SelectItem>
+                    <SelectItem value="moderate">Moderate</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="extreme">Extreme</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  placeholder="Describe the conditions, observations, and any relevant details"
+                  value={newReport.description}
+                  onChange={handleInputChange}
+                  rows={4}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="image">Photo (Optional)</Label>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="border rounded-lg p-2">
+                    <label 
+                      htmlFor="image" 
+                      className="flex flex-col items-center justify-center cursor-pointer p-4 border-2 border-dashed rounded-md"
+                    >
+                      {previewImage ? (
+                        <div className="w-full">
+                          <img 
+                            src={previewImage} 
+                            alt="Preview" 
+                            className="max-h-[200px] mx-auto object-cover rounded" 
+                          />
+                          <p className="text-sm text-center mt-2 text-gray-500">
+                            Click to change image
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                          <span className="text-sm text-gray-500">
+                            Click to upload a photo
+                          </span>
+                        </>
+                      )}
+                      <input
+                        id="image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter className="pt-2 border-t">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Submit Report</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

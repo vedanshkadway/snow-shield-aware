@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -34,18 +33,40 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    // Enhanced validation
+    const errors = [];
+    
+    if (!email.trim()) errors.push("Email is required");
+    if (!password) errors.push("Password is required");
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email.trim() && !emailRegex.test(email)) {
+      errors.push("Please enter a valid email address");
+    }
+
+    if (errors.length > 0) {
+      errors.forEach(err => toast.error(err));
       return;
     }
 
     try {
       setIsSubmitting(true);
+      console.log("Attempting to login with email:", email);
       await login(email, password);
       // Don't navigate here - let the auth state change trigger navigation
+      console.log("Login successful, waiting for auth state change");
     } catch (error: any) {
-      console.error("Login error:", error);
-      // Error is already handled in the login function
+      console.error("Login error in component:", error);
+      
+      // Handle specific error cases
+      if (error.message?.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password. Please try again.");
+      } else if (error.message?.includes("Email not confirmed")) {
+        toast.error("Please verify your email before logging in");
+      } else {
+        toast.error(error.message || "Failed to login. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -99,7 +120,7 @@ const Login = () => {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-gray-300">Password</Label>
                   <Link
-                    to="#"
+                    to="/forgot-password"
                     className="text-xs text-red-500 hover:underline"
                   >
                     Forgot password?

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,33 +37,53 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !email || !phone || !pinCode || !password) {
-      toast.error("Please fill in all required fields");
-      return;
+    // Enhanced validation
+    const errors = [];
+    
+    if (!name.trim()) errors.push("Name is required");
+    if (!email.trim()) errors.push("Email is required");
+    if (!phone.trim()) errors.push("Phone number is required");
+    if (!pinCode.trim()) errors.push("PIN code is required");
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email.trim() && !emailRegex.test(email)) {
+      errors.push("Please enter a valid email address");
     }
 
-    if (password.length < 6) {
-      toast.error("Password should be at least 6 characters");
-      return;
+    // Password validation
+    if (!password) {
+      errors.push("Password is required");
+    } else if (password.length < 6) {
+      errors.push("Password should be at least 6 characters");
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      errors.push("Passwords do not match");
+    }
+
+    if (errors.length > 0) {
+      errors.forEach(err => toast.error(err));
       return;
     }
 
     try {
       setIsSubmitting(true);
+      console.log("Attempting to signup with:", { name, email, phone, pinCode });
       await signup(name, email, phone, pinCode, password);
       toast.success("Account created! Please check your email to verify your account.");
       // Navigate to login page after successful signup
       navigate("/login");
     } catch (error: any) {
       console.error("Signup error:", error);
-      // Most errors are already handled in the signup function
-      // but we can add additional error handling here if needed
-      if (error.code === "weak_password") {
+      
+      // Handle specific error cases
+      if (error.message?.includes("already registered")) {
+        toast.error("This email is already registered. Try logging in instead.");
+      } else if (error.message?.includes("weak password")) {
         toast.error("Please use a stronger password");
+      } else {
+        toast.error(error.message || "Failed to create account. Please try again.");
       }
     } finally {
       setIsSubmitting(false);

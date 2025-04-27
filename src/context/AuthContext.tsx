@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -37,70 +36,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
-        setIsLoading(true);
-        
-        if (session) {
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            if (error) {
-              console.error('Error fetching profile:', error);
-              setIsLoading(false);
-              return;
-            }
-
-            if (profile) {
-              setUser({
-                id: session.user.id,
-                email: profile.email,
-                name: profile.name || '',
-                phone: profile.phone || '',
-                pinCode: profile.pin_code || '',
-                role: (profile.role as User['role']) || 'user'
-              });
-              setIsAuthenticated(true);
-            } else {
-              console.warn('No profile found for user:', session.user.id);
-              setUser(null);
-              setIsAuthenticated(false);
-            }
-          } catch (error) {
-            console.error('Error in auth state change handler:', error);
-          }
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-        setIsLoading(false);
-      }
-    );
-
-    // Then check current session
+    // Check current session first
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setIsLoading(false);
+          return;
+        }
         
         if (!session) {
+          console.log('No active session');
           setIsLoading(false);
           return;
         }
 
-        const { data: profile, error } = await supabase
+        console.log('Found session for user:', session.user.id);
+        
+        // Get user profile
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .maybeSingle();
+          .single();
 
-        if (error) {
-          console.error('Error fetching profile during initialization:', error);
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          // If no profile exists yet but we have a session, we might create one
+          if (profileError.code === 'PGRST116') {
+            console.log('Profile not found, creating one...');
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata?.name || '',
+                phone: session.user.user_metadata?.phone || '',
+                pin_code: session.user.user_metadata?.pinCode || '',
+                role: 'user'
+              });
+              
+            if (insertError) {
+              console.error('Error creating profile:', insertError);
+            } else {
+              // Retry fetching the profile
+              const { data: newProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+                
+              if (newProfile) {
+                setUser({
+                  id: session.user.id,
+                  email: newProfile.email,
+                  name: newProfile.name || '',
+                  phone: newProfile.phone || '',
+                  pinCode: newProfile.pin_code || '',
+                  role: (newProfile.role as User['role']) || 'user'
+                });
+                setIsAuthenticated(true);
+              }
+            }
+          }
           setIsLoading(false);
           return;
         }
@@ -125,6 +125,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     checkSession();
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
+        
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+          return;
+        }
+        
+        if (!session) {
+          setUser(null);
+          setIsAuthenticated(false);
+          return;
+        }
+
+        setIsLoading(true);
+        
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching profile:', error);
+            setIsLoading(false);
+            return;
+          }
+
+          if (profile) {
+            setUser({
+              id: session.user.id,
+              email: profile.email,
+              name: profile.name || '',
+              phone: profile.phone || '',
+              pinCode: profile.pin_code || '',
+              role: (profile.role as User['role']) || 'user'
+            });
+            setIsAuthenticated(true);
+          } else {
+            console.warn('No profile found for user:', session.user.id);
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        } catch (error) {
+          console.error('Error in auth state change handler:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    );
+
     return () => {
       subscription.unsubscribe();
     };
@@ -139,7 +194,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        if (error.message === 'Email not confirmed') {
+        console.error("Login error:", error);
+        if (error.message.includes('Email not confirmed')) {
           toast.error("Please verify your email before logging in");
         } else {
           toast.error(error.message || "Failed to login");
@@ -153,6 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       toast.success("Logged in successfully");
+      return;
     } catch (error: any) {
       console.error("Login error:", error);
       throw error;
@@ -164,13 +221,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (name: string, email: string, phone: string, pinCode: string, password: string) => {
     setIsLoading(true);
     try {
-      // Step 1: Create the auth user
+      // Step 1: Create the auth user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            name,
+            phone,
+            pinCode
+          },
+          emailRedirectTo: window.location.origin + '/login'
+        }
       });
 
       if (authError) {
+        console.error("Auth error:", authError);
         toast.error(authError.message || "Failed to create account");
         throw authError;
       }
@@ -213,7 +279,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.error("Logout error:", error);
+        throw error;
+      }
       setUser(null);
       setIsAuthenticated(false);
       toast.success("Logged out successfully");
