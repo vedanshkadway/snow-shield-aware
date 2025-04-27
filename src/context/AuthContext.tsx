@@ -52,11 +52,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (profile) {
               setUser({
                 id: session.user.id,
-                email: session.user.email || '',
+                email: profile.email,
                 name: profile.name,
                 phone: profile.phone,
                 pinCode: profile.pin_code,
-                role: 'user' // Set default role to 'user'
+                role: profile.role as User['role']
               });
               setIsAuthenticated(true);
             }
@@ -83,11 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (profile) {
               setUser({
                 id: session.user.id,
-                email: session.user.email || '',
+                email: profile.email,
                 name: profile.name,
                 phone: profile.phone,
                 pinCode: profile.pin_code,
-                role: 'user' // Set default role to 'user'
+                role: profile.role as User['role']
               });
               setIsAuthenticated(true);
             }
@@ -128,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name,
             phone,
             pinCode,
+            role: 'user' // Explicitly set default role
           },
         },
       });
