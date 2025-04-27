@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: profile.name,
                 phone: profile.phone,
                 pinCode: profile.pin_code,
-                role: 'user'
+                role: 'user' // Set default role to 'user'
               });
               setIsAuthenticated(true);
             }
@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 name: profile.name,
                 phone: profile.phone,
                 pinCode: profile.pin_code,
-                role: 'user'
+                role: 'user' // Set default role to 'user'
               });
               setIsAuthenticated(true);
             }
