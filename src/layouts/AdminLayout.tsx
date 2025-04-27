@@ -16,7 +16,7 @@ import { Bell, Users, MapPin, AlertTriangle, FileText, Settings } from "lucide-r
 import Logo from "@/components/Logo";
 
 const AdminLayout = () => {
-  const { currentUser } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const menuItems = [
@@ -28,7 +28,7 @@ const AdminLayout = () => {
     { icon: Settings, label: "Settings", path: "/admin/settings" },
   ];
 
-  if (!currentUser) {
+  if (!user) {
     navigate("/login");
     return null;
   }
@@ -69,7 +69,7 @@ const AdminLayout = () => {
               <Button 
                 variant="destructive" 
                 size="sm" 
-                onClick={() => navigate("/login")}
+                onClick={logout}
               >
                 Logout
               </Button>
