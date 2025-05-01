@@ -1,4 +1,4 @@
-import React from "react";
+wimport React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
@@ -47,7 +47,7 @@ const Index = () => {
                   size="lg" 
                   className="bg-white text-red-600 hover:bg-gray-100 font-medium"
                 >
-                  <Link to="/signup">Get Alerts</Link>
+                  <Link to="/education">Get Alerts</Link>
                 </Button>
                 <Button 
                   asChild
