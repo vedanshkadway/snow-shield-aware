@@ -47,7 +47,7 @@ const Index = () => {
                   size="lg" 
                   className="bg-white text-red-600 hover:bg-gray-100 font-medium"
                 >
-                  <Link to="/education">Get Alerts</Link>
+                  <Link to="/signup">Get Alerts</Link>
                 </Button>
                 <Button 
                   asChild
